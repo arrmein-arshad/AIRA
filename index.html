@@ -547,16 +547,7 @@ function toggleCall(){live?stopCall():startCall();}
     endCall();
   }
 }
-  } else {
-    console.error('Vapi SDK or credentials missing', {
-      hasVapi: !!window.Vapi,
-      hasKey: !!C.VAPI_KEY,
-      hasAssistant: !!C.VAPI_ID
-    });
-    hint.textContent = 'Vapi SDK or credentials missing';
-    demoMode();
-  }
-}
+
 
 function demoMode(){
   const btn=document.getElementById('vbtn'),hint=document.getElementById('vhint');
@@ -637,4 +628,3 @@ console.log('AIRA site loaded. Vapi SDK:', !!window.Vapi, 'Assistant ID:', C.VAP
 </a>
 </body>
 </html>
-
