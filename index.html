@@ -486,57 +486,67 @@ function setFace(on){
 // VOICE CALL
 function toggleCall(){live?stopCall():startCall();}
 
-function startCall(){
+  async function startCall(){
   const btn = document.getElementById('vbtn');
   const hint = document.getElementById('vhint');
 
   btn.textContent = '◌  Connecting...';
   btn.className = 'vbtn conn';
-  hint.textContent = 'Establishing secure connection...';
+  hint.textContent = 'Loading AIRA voice...';
   document.getElementById('flbl').textContent = 'CONNECTING';
 
-  if (window.Vapi && C.VAPI_KEY && C.VAPI_ID) {
-    try {
-      vapi = new window.Vapi(C.VAPI_KEY);
-
-      vapi.on('call-start', () => {
-        live = true;
-        cc++;
-        document.getElementById('sc').textContent = cc;
-        btn.textContent = '◼  End Call';
-        btn.className = 'vbtn active';
-        hint.textContent = 'AIRA is listening — speak now';
-        document.getElementById('flbl').textContent = 'LISTENING';
-        setWave(true, 1.2);
-        setFace(false);
-      });
-
-      vapi.on('speech-start', () => {
-        document.getElementById('flbl').textContent = 'AIRA SPEAKING';
-        setWave(true, 2);
-        setFace(true);
-      });
-
-      vapi.on('speech-end', () => {
-        document.getElementById('flbl').textContent = 'LISTENING';
-        setWave(true, 1);
-        setFace(false);
-      });
-
-      vapi.on('call-end', () => endCall());
-
-      vapi.on('error', (err) => {
-        console.error('Vapi error:', err);
-        hint.textContent = 'Vapi connection error — check browser Console';
-        endCall();
-      });
-
-      vapi.start(C.VAPI_ID);
-    } catch (err) {
-      console.error('Vapi start failed:', err);
-      hint.textContent = 'Vapi start failed — check browser Console';
-      endCall();
+  try {
+    if (!window.Vapi) {
+      const mod = await import("https://esm.sh/@vapi-ai/web");
+      window.Vapi = mod.default;
     }
+
+    if (!window.Vapi || !C.VAPI_KEY || !C.VAPI_ID) {
+      throw new Error("Vapi SDK, public key, or assistant ID missing");
+    }
+
+    vapi = new window.Vapi(C.VAPI_KEY);
+
+    vapi.on('call-start', () => {
+      live = true;
+      cc++;
+      document.getElementById('sc').textContent = cc;
+      btn.textContent = '◼  End Call';
+      btn.className = 'vbtn active';
+      hint.textContent = 'AIRA is listening — speak now';
+      document.getElementById('flbl').textContent = 'LISTENING';
+      setWave(true, 1.2);
+      setFace(false);
+    });
+
+    vapi.on('speech-start', () => {
+      document.getElementById('flbl').textContent = 'AIRA SPEAKING';
+      setWave(true, 2);
+      setFace(true);
+    });
+
+    vapi.on('speech-end', () => {
+      document.getElementById('flbl').textContent = 'LISTENING';
+      setWave(true, 1);
+      setFace(false);
+    });
+
+    vapi.on('call-end', () => endCall());
+
+    vapi.on('error', (err) => {
+      console.error('Vapi error:', err);
+      hint.textContent = 'Vapi connection error — check Console';
+      endCall();
+    });
+
+    await vapi.start(C.VAPI_ID);
+
+  } catch (err) {
+    console.error('AIRA voice start failed:', err);
+    hint.textContent = 'AIRA voice failed — check Console';
+    endCall();
+  }
+}
   } else {
     console.error('Vapi SDK or credentials missing', {
       hasVapi: !!window.Vapi,
